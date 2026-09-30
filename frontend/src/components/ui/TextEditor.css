@@ -1,0 +1,128 @@
+.teditor {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-focus);
+  }
+}
+
+.teditor__toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px;
+  background: var(--color-surface-alt);
+  border-bottom: 1px solid var(--color-border);
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    &:hover:not(:disabled) {
+      background: var(--color-surface);
+      color: var(--color-text);
+    }
+
+    &:disabled {
+      color: var(--color-text-muted);
+      cursor: not-allowed;
+    }
+  }
+}
+
+.teditor__sep {
+  width: 1px;
+  height: 20px;
+  background: var(--color-border);
+  margin: 0 4px;
+}
+
+.teditor__area {
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-surface);
+  outline: none;
+  overflow-y: auto;
+
+  &:empty::before {
+    content: attr(data-placeholder);
+    color: var(--color-text-muted);
+    pointer-events: none;
+  }
+
+  &:disabled {
+    background: var(--color-surface-alt);
+  }
+
+  h1, h2, h3 {
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 0.6em 0 0.4em;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  h3 {
+    font-size: 17px;
+  }
+
+  h4, h5 {
+    font-size: 15px;
+    margin: 0.6em 0 0.3em;
+  }
+
+  p {
+    margin: 0 0 0.8em;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  ul, ol {
+    margin: 0 0 0.8em;
+    padding-left: 22px;
+  }
+
+  a {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+
+  blockquote {
+    margin: 0.8em 0;
+    padding: 8px 14px;
+    border-left: 3px solid var(--color-primary-border);
+    background: var(--color-primary-light);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+  }
+}

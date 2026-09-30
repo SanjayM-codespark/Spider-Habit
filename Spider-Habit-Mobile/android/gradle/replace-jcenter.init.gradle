@@ -1,0 +1,58 @@
+// replace-jcenter.init.gradle
+// This init script intercepts jcenter() in ALL buildscript and allprojects
+// repository blocks across every subproject, replacing it with mavenCentral().
+// This is needed because react-native-push-notification's build.gradle still
+// uses jcenter(), which was shut down and removed from Gradle 8+.
+
+allprojects {
+    buildscript {
+        repositories {
+            remove(jcenter())
+        }
+    }
+}
+
+settingsEvaluated { settings ->
+    settings.pluginManagement {
+        repositories {
+            google()
+            mavenCentral()
+            gradlePluginPortal()
+        }
+    }
+}
+
+gradle.projectsLoaded {
+    rootProject.allprojects {
+        buildscript {
+            repositories {
+                all { ArtifactRepository repo ->
+                    if (repo instanceof MavenArtifactRepository) {
+                        def url = repo.url.toString()
+                        if (url.contains('jcenter.bintray.com')) {
+                            logger.warn "Removing jcenter repository: ${url}"
+                            remove repo
+                        }
+                    }
+                }
+                if (!repositories.find { it instanceof MavenArtifactRepository && it.url.toString().contains('repo1.maven.org') }) {
+                    mavenCentral()
+                }
+            }
+        }
+        repositories {
+            all { ArtifactRepository repo ->
+                if (repo instanceof MavenArtifactRepository) {
+                    def url = repo.url.toString()
+                    if (url.contains('jcenter.bintray.com')) {
+                        logger.warn "Removing jcenter repository: ${url}"
+                        remove repo
+                    }
+                }
+            }
+            if (!repositories.find { it instanceof MavenArtifactRepository && it.url.toString().contains('repo1.maven.org') }) {
+                mavenCentral()
+            }
+        }
+    }
+}

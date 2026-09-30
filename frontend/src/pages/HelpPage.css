@@ -1,0 +1,40 @@
+.help__card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.help__alert {
+  margin: 0;
+}
+
+.help__state {
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: 32px 20px;
+  margin: 0;
+}
+
+.help__form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.help__editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.help__editor-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.help__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}

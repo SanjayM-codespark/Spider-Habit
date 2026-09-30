@@ -1,0 +1,22 @@
+.placeholder {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: var(--color-surface);
+  border: 1px dashed var(--color-secondary-border);
+  border-radius: var(--radius-lg);
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.placeholder__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 8px;
+}
+
+.placeholder__text {
+  color: var(--color-text-secondary);
+  max-width: 420px;
+  margin: 0 auto;
+}

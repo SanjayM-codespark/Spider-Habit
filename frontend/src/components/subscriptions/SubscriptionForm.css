@@ -1,0 +1,39 @@
+.subform {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.subform__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.subform__desc {
+  grid-column: 1 / -1;
+}
+
+.subform__alert {
+  margin: 0;
+}
+
+.subform__summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.subform__summary-item {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 4px 12px;
+}
+
+.subform__actions {
+  display: flex;
+  gap: 10px;
+}

@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS help_pages (
+    slug TEXT PRIMARY KEY,
+
+    title TEXT NOT NULL DEFAULT '',
+
+    content TEXT NOT NULL DEFAULT '',
+
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

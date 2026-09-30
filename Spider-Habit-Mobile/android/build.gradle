@@ -1,0 +1,40 @@
+buildscript {
+    ext {
+        buildToolsVersion = "36.0.0"
+        minSdkVersion = 24
+        compileSdkVersion = 36
+        targetSdkVersion = 36
+        ndkVersion = "27.1.12297006"
+        kotlinVersion = "2.1.20"
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle")
+        classpath("com.facebook.react:react-native-gradle-plugin")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        classpath("com.google.gms:google-services:4.4.2")
+    }
+}
+
+apply plugin: "com.facebook.react.rootproject"
+
+allprojects {
+    repositories {
+        // Redirect jcenter() references (used by older libraries like react-native-push-notification)
+        // to mavenCentral(), since JCenter was shut down.
+        google()
+        mavenCentral()
+        maven { url "https://www.jitpack.io" }
+    }
+    configurations.all {
+        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+            // Force ShortcutBadger to a version available on mavenCentral
+            if (details.requested.group == 'me.leolin' && details.requested.name == 'ShortcutBadger') {
+                details.useVersion '1.1.22'
+            }
+        }
+    }
+}

@@ -1,0 +1,17 @@
+CREATE TABLE IF NOT EXISTS users (
+    id BIGSERIAL PRIMARY KEY,
+
+    name VARCHAR(150) NOT NULL,
+
+    email VARCHAR(255) NOT NULL UNIQUE,
+
+    phone VARCHAR(20) NOT NULL UNIQUE,
+
+    password_hash TEXT NOT NULL,
+
+    is_subscribed BOOLEAN NOT NULL DEFAULT FALSE,
+
+    subscription_id BIGINT REFERENCES subscriptions(id) ON DELETE SET NULL,
+
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

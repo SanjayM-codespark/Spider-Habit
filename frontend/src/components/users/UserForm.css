@@ -1,0 +1,20 @@
+.userform {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.userform__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.userform__alert {
+  margin: 0;
+}
+
+.userform__actions {
+  display: flex;
+  gap: 10px;
+}

@@ -1,0 +1,235 @@
+.ms__alert {
+  margin-bottom: 16px;
+}
+
+.ms__card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.ms__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ms__search {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 240px;
+  max-width: 380px;
+  padding: 9px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-text);
+    font-size: 13.5px;
+
+    &::placeholder {
+      color: var(--color-text-muted);
+    }
+  }
+
+  &:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-focus);
+  }
+}
+
+.ms__tabs {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.ms__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    color: var(--color-text);
+  }
+}
+
+.ms__tab--active {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+
+  &:hover {
+    color: var(--color-primary);
+  }
+}
+
+.ms__tab-count {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.ms__tab--active .ms__tab-count {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.ms__state {
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: 48px 20px;
+  margin: 0;
+}
+
+.ms__table-wrap {
+  overflow-x: auto;
+}
+
+.ms__table {
+  width: 100%;
+  min-width: 820px;
+
+  thead th {
+    background: var(--color-surface-alt);
+    padding: 12px;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  td {
+    vertical-align: middle;
+    padding: 12px;
+    text-align: center;
+  }
+
+  tbody tr:hover {
+    background: var(--color-surface-alt);
+  }
+}
+
+.ms__name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.ms__desc {
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.ms__duration {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ms__pricing {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 280px;
+  justify-content: center;
+}
+
+.ms__price {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 3px 10px;
+  white-space: nowrap;
+
+  strong {
+    color: var(--color-text);
+  }
+}
+
+.ms__actions {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.ms__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    background: var(--color-surface-alt);
+    color: var(--color-text);
+  }
+}
+
+.ms__icon-btn--danger:hover {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
+.ms__delete-text {
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.6;
+
+  strong {
+    color: var(--color-text);
+  }
+}
+
+.badge--platform-android,
+.badge--platform-ios {
+  background: var(--color-secondary-light);
+  color: var(--color-secondary);
+}

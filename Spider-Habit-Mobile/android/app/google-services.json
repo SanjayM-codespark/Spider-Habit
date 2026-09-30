@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "651646082920",
+    "project_id": "spider-habit",
+    "storage_bucket": "spider-habit.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:651646082920:android:1b0d1e8883f31a721980dd",
+        "android_client_info": {
+          "package_name": "com.spiderindia.habitmobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCI7JEB2pOkSdUQ4ABPHySkikasnBZIPik"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
