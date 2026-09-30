@@ -17,3 +17,5 @@ coverage/
 .vscode/
 .DS_Store
 Thumbs.db
+# Local backups
+Spider-Habit-Mobile-Backup/
