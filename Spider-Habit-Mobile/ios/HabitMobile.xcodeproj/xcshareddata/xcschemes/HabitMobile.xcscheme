@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "HobbyMobile.app"
-               BlueprintName = "HobbyMobile"
-               ReferencedContainer = "container:HobbyMobile.xcodeproj">
+               BuildableName = "HabitMobile.app"
+               BlueprintName = "HabitMobile"
+               ReferencedContainer = "container:HabitMobile.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -46,9 +46,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "HobbyMobile.app"
-            BlueprintName = "HobbyMobile"
-            ReferencedContainer = "container:HobbyMobile.xcodeproj">
+            BuildableName = "HabitMobile.app"
+            BlueprintName = "HabitMobile"
+            ReferencedContainer = "container:HabitMobile.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -63,9 +63,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "HobbyMobile.app"
-            BlueprintName = "HobbyMobile"
-            ReferencedContainer = "container:HobbyMobile.xcodeproj">
+            BuildableName = "HabitMobile.app"
+            BlueprintName = "HabitMobile"
+            ReferencedContainer = "container:HabitMobile.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
