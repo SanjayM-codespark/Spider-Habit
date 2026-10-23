@@ -47,7 +47,9 @@ const create = async (req, res) => {
             reminderTime,
             goalDetails,
             icon,
-            iconImageUrl
+            iconImageUrl,
+            streak,
+            completedDates
         } = req.body;
 
         if (!clientUserId || !title || !frequency) {
@@ -65,7 +67,9 @@ const create = async (req, res) => {
             reminderTime: reminderTime ? String(reminderTime) : "",
             goalDetails: goalDetails ? String(goalDetails) : "",
             icon: icon ? String(icon) : "runner",
-            iconImageUrl: sanitizeIconImageUrl(iconImageUrl)
+            iconImageUrl: sanitizeIconImageUrl(iconImageUrl),
+            streak: Number(streak),
+            completedDates: Array.isArray(completedDates) ? completedDates : []
         });
 
         return res.status(201).json({

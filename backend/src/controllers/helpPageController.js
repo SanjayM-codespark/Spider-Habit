@@ -38,6 +38,62 @@ const getOne = async (req, res) => {
     }
 };
 
+const create = async (req, res) => {
+    try {
+        const { title, content } = req.body;
+
+        if (!title || !String(title).trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "Page title is required"
+            });
+        }
+
+        const page = await HelpPage.create({
+            title: String(title).trim(),
+            content: content !== undefined ? String(content) : ""
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "Help page created successfully",
+            data: page
+        });
+    } catch (error) {
+        console.error("Create help page error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Failed to create help page"
+        });
+    }
+};
+
+const remove = async (req, res) => {
+    try {
+        const deleted = await HelpPage.remove(req.params.slug);
+
+        if (!deleted) {
+            return res.status(404).json({
+                success: false,
+                message: "Help page not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Help page deleted successfully"
+        });
+    } catch (error) {
+        console.error("Delete help page error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Failed to delete help page"
+        });
+    }
+};
+
 const save = async (req, res) => {
     try {
         const { title, content } = req.body;
@@ -72,5 +128,7 @@ const save = async (req, res) => {
 module.exports = {
     list,
     getOne,
-    save
+    create,
+    save,
+    remove
 };

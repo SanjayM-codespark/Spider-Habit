@@ -3,39 +3,25 @@ import Button from '../components/ui/Button'
 import Alert from '../components/ui/Alert'
 import Modal from '../components/ui/Modal'
 import UserForm from '../components/users/UserForm'
-import { getUsers, getUser, updateUser, deleteUser } from '../services/user'
+import { getUsers, getDeletedUsers, getUser, updateUser, deleteUser, restoreUser } from '../services/user'
 import { getSubscriptions } from '../services/subscription'
 import { buildPublicUrl } from '../lib/api'
 import './Users.css'
 
-const VIEW_ICON = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
-    <circle cx="12" cy="12" r="3" />
-  </svg>
+export const VIEW_ICON = (
+  <i className="fa-solid fa-eye" aria-hidden="true" />
 )
 
-const EDIT_ICON = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-    <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z" />
-  </svg>
+export const EDIT_ICON = (
+  <i className="fa-solid fa-pen-to-square" aria-hidden="true" />
 )
 
-const DELETE_ICON = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <polyline points="3 6 5 6 21 6" />
-    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    <line x1="10" y1="11" x2="10" y2="17" />
-    <line x1="14" y1="11" x2="14" y2="17" />
-  </svg>
+export const DELETE_ICON = (
+  <i className="fa-solid fa-trash-can" aria-hidden="true" />
 )
 
-const SEARCH_ICON = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <circle cx="11" cy="11" r="8" />
-    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-  </svg>
+export const SEARCH_ICON = (
+  <i className="fa-solid fa-magnifying-glass" aria-hidden="true" />
 )
 
 const STATUS_TABS = [
@@ -71,7 +57,7 @@ function habitEmoji(icon) {
  * Renders a habit's icon: the user-uploaded image when the habit has one,
  * otherwise the built-in emoji. Mirrors HabitIconBadge in the mobile app.
  */
-function HabitIcon({ icon, iconImageUrl }) {
+export function HabitIcon({ icon, iconImageUrl }) {
   const src = buildPublicUrl(iconImageUrl)
   if (src) {
     return <img className="us-habit__icon" src={src} alt="" loading="lazy" />
@@ -84,7 +70,7 @@ function formatDid(dayId) {
   return match ? match[0] : String(dayId)
 }
 
-function UserHabits({ habits }) {
+export function UserHabits({ habits }) {
   return (
     <section className="us-habits">
       <div className="us-habits__head">
@@ -192,7 +178,9 @@ function UserDetail({ user }) {
   )
 }
 
-function Users() {
+function Users({ filter = 'all' } = {}) {
+  const isDeletedView = filter === 'deleted'
+  const isPremiumView = filter === 'premium'
   const [users, setUsers] = useState([])
   const [subscriptionOptions, setSubscriptionOptions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -208,9 +196,12 @@ function Users() {
   const [editing, setEditing] = useState(null)
   const [deleting, setDeleting] = useState(null)
   const [deletingBusy, setDeletingBusy] = useState(false)
+  const [restoring, setRestoring] = useState(null)
+  const [restoringBusy, setRestoringBusy] = useState(false)
 
   const fetchAll = useCallback(() => {
-    return Promise.all([getUsers(), getSubscriptions()])
+    const userPromise = isDeletedView ? getDeletedUsers() : getUsers()
+    return Promise.all([userPromise, getSubscriptions()])
       .then(([userRes, subRes]) => {
         setUsers(userRes ?? [])
         setSubscriptionOptions(
@@ -219,7 +210,7 @@ function Users() {
       })
       .catch((err) => setError(err.message || 'Failed to load users.'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [isDeletedView])
 
   useEffect(() => {
     fetchAll()
@@ -245,6 +236,12 @@ function Users() {
         `${user.name} ${user.email} ${user.phone} ${user.subscription_name ?? ''}`
           .toLowerCase()
           .includes(normalizedQuery)
+      if (isPremiumView && !user.is_subscribed) {
+        return false
+      }
+      if (isDeletedView) {
+        return matchesQuery
+      }
       const matchesStatus =
         statusFilter === 'all' ||
         (statusFilter === 'subscribed'
@@ -252,7 +249,7 @@ function Users() {
           : !user.is_subscribed)
       return matchesQuery && matchesStatus
     })
-  }, [users, query, statusFilter])
+  }, [users, query, statusFilter, isPremiumView, isDeletedView])
 
   function openView(user) {
     setViewing(user)
@@ -290,13 +287,35 @@ function Users() {
     }
   }
 
+  async function handleRestore() {
+    if (!restoring) return
+    setRestoringBusy(true)
+    try {
+      await restoreUser(restoring.id)
+      setRestoring(null)
+      await refresh()
+    } catch (err) {
+      setError(err.message || 'Failed to restore user.')
+      setRestoring(null)
+    } finally {
+      setRestoringBusy(false)
+    }
+  }
+
+  const pageTitle = isDeletedView ? 'Deleted Users' : isPremiumView ? 'Premium Users' : filter === 'all' ? 'All Users' : 'Users'
+  const pageSubtitle = isDeletedView
+    ? users.length + ' deleted user(s).'
+    : isPremiumView
+      ? subscribedCount + ' premium/subscribed user(s).'
+      : users.length + ' user(s) registered on the app.'
+
   return (
     <div className="page">
       <div className="page__head">
         <div>
-          <h2 className="page__title">Users</h2>
+          <h2 className="page__title">{pageTitle}</h2>
           <p className="page__subtitle">
-            {users.length} user(s) registered on the app.
+            {pageSubtitle}
           </p>
         </div>
         <Button variant="outline" onClick={refresh} disabled={loading}>
@@ -416,15 +435,27 @@ function Users() {
                             >
                               {EDIT_ICON}
                             </button>
-                            <button
-                              type="button"
-                              className="us__icon-btn us__icon-btn--danger"
-                              onClick={() => setDeleting(user)}
-                              title="Delete"
-                              aria-label={`Delete ${user.name}`}
-                            >
-                              {DELETE_ICON}
-                            </button>
+                            {!isDeletedView ? (
+                              <button
+                                type="button"
+                                className="us__icon-btn us__icon-btn--danger"
+                                onClick={() => setDeleting(user)}
+                                title="Delete"
+                                aria-label={`Delete ${user.name}`}
+                              >
+                                {DELETE_ICON}
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                className="us__icon-btn"
+                                onClick={() => setRestoring(user)}
+                                title="Restore"
+                                aria-label={`Restore ${user.name}`}
+                              >
+                                <i className="fa-solid fa-rotate-left"></i>
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -489,6 +520,27 @@ function Users() {
         <p className="us__delete-text">
           Are you sure you want to delete <strong>{deleting ? deleting.name : ''}</strong> (
           {deleting ? deleting.email : ''})? This action cannot be undone.
+        </p>
+      </Modal>
+
+      <Modal
+        open={Boolean(restoring)}
+        title="Restore User"
+        onClose={() => setRestoring(null)}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setRestoring(null)} disabled={restoringBusy}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleRestore} loading={restoringBusy}>
+              {restoringBusy ? 'Restoring...' : 'Restore'}
+            </Button>
+          </>
+        }
+      >
+        <p className="us__delete-text">
+          Are you sure you want to restore <strong>{restoring ? restoring.name : ''}</strong> (
+          {restoring ? restoring.email : ''})?
         </p>
       </Modal>
     </div>

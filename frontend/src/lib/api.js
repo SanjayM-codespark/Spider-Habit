@@ -23,6 +23,8 @@ function handleUnauthorized() {
   }
 }
 
+const REQUEST_TIMEOUT_MS = 20000
+
 async function request(
   path,
   { method = 'GET', body, headers = {}, auth = false, credentials = 'omit' } = {},
@@ -38,12 +40,31 @@ async function request(
     if (token) requestHeaders.Authorization = `Bearer ${token}`
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers: requestHeaders,
-    credentials,
-    body: body !== undefined ? (isFormData ? body : JSON.stringify(body)) : undefined,
-  })
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+
+  let response
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers: requestHeaders,
+      credentials,
+      signal: controller.signal,
+      body: body !== undefined ? (isFormData ? body : JSON.stringify(body)) : undefined,
+    })
+  } catch (err) {
+    // Never surface the raw browser error ("Failed to fetch") to the user.
+    const timedOut = err?.name === 'AbortError'
+    const error = new Error(
+      timedOut
+        ? 'The request timed out. Please check your connection and try again.'
+        : 'Unable to reach the server. Please check your connection and try again.',
+    )
+    error.status = 0
+    throw error
+  } finally {
+    clearTimeout(timer)
+  }
 
   let data = null
   try {

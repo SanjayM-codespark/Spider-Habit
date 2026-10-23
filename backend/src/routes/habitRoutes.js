@@ -1,5 +1,6 @@
 const express = require("express");
 const habitController = require("../controllers/habitController");
+const { authenticate } = require("../middleware/authMiddleware");
 const { upload, MAX_FILE_BYTES } = require("../middleware/iconUpload");
 
 const router = express.Router();
@@ -26,6 +27,10 @@ router.use((err, req, res, next) => {
         message: err.message || "Icon upload failed."
     });
 });
+
+// Admin panel: edit / delete any habit (requires an admin token).
+router.put("/admin/:id", authenticate, habitController.update);
+router.delete("/admin/:id", authenticate, habitController.remove);
 
 // Fetch all habits for a user
 router.get("/:clientUserId", habitController.listByUser);

@@ -3,6 +3,7 @@ const subscriptionModel = require("../models/subscriptionModel");
 const User = require("../models/userModel");
 const Settings = require("../models/settingsModel");
 const Payment = require("../models/paymentModel");
+const { normalizeFeatures } = require("../constants/subscriptionFeatures");
 
 /**
  * Read the Razorpay test/production keys saved under Payment Settings in the
@@ -55,6 +56,7 @@ const normalizePayload = (body) => {
             duration: String(duration),
             description: String(description),
             platform: String(platform).toLowerCase(),
+            features: normalizeFeatures(body.features),
             pricing: pricing.map((price) => ({
                 country: String(price.country).toUpperCase(),
                 currency: String(price.currency).toUpperCase(),

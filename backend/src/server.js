@@ -100,6 +100,25 @@ app.get("/db-test", async (req, res) => {
     }
 });
 
+// Final JSON error handler so oversized or otherwise rejected requests never
+// leak an HTML stack trace (with server file paths) to the client.
+app.use((err, req, res, next) => {
+    if (res.headersSent) return next(err);
+
+    const status = err && err.status >= 400 && err.status < 500 ? err.status : 500;
+    if (status === 500) console.error("Unhandled error:", err);
+
+    return res.status(status).json({
+        success: false,
+        message:
+            status === 413
+                ? "Request is too large."
+                : status === 500
+                  ? "Something went wrong. Please try again."
+                  : "Invalid request."
+    });
+});
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

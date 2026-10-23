@@ -13,9 +13,13 @@
   flex-shrink: 0;
   margin-top: 1px;
 
-  svg {
+  i {
     width: 18px;
     height: 18px;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -52,9 +56,13 @@
     background: rgba(0, 0, 0, 0.06);
   }
 
-  svg {
+  i {
     width: 14px;
     height: 14px;
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 

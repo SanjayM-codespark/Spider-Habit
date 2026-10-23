@@ -1,4 +1,5 @@
 const pool = require("../config/database");
+const { countryFromPhone } = require("../constants/countries");
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MONTH_MS = 30 * DAY_MS;
@@ -21,61 +22,84 @@ const Dashboard = {
     async getOverview(expiryWindowDays = 7) {
         const windowDays = Number.isFinite(expiryWindowDays) ? expiryWindowDays : 7;
 
-        const [usersResult, habitsResult, pricesResult, subscriptionsResult] =
+        const [usersResult, habitsResult, paymentsResult, subscriptionsResult] =
             await Promise.all([
                 pool.query(
                     `SELECT id, name, email, phone, is_subscribed, subscription_id, created_at
                      FROM users
+                     WHERE is_deleted IS NOT TRUE
                      ORDER BY created_at DESC`
                 ),
                 pool.query(`SELECT COUNT(*)::int AS count FROM habits`),
                 pool.query(
-                    `SELECT subscription_id, country, currency, amount
-                     FROM subscription_prices`
+                    `SELECT email, currency, amount
+                     FROM payments
+                     WHERE status = 'captured'`
                 ),
                 pool.query(`SELECT id, name, duration FROM subscriptions`)
             ]);
 
         const users = usersResult.rows;
-        const prices = pricesResult.rows;
+        const payments = paymentsResult.rows;
         const subscriptions = subscriptionsResult.rows;
 
         const currentSubscribers = users.filter((user) =>
             Boolean(user.is_subscribed)
         ).length;
 
-        // The app has no transaction/payment table yet, so revenue is the
-        // projected value coming from the configured price catalogue.
-        const totalRevenue = prices.reduce(
-            (sum, price) => sum + Number(price.amount),
-            0
-        );
+        // Revenue is what was actually paid (captured payments), kept per
+        // currency because amounts in different currencies can't be added.
+        const addAmount = (map, currency, amount) =>
+            map.set(currency, (map.get(currency) || 0) + Number(amount));
+        const toList = (map) =>
+            Array.from(map.entries()).map(([currency, amount]) => ({
+                currency,
+                amount: Number(amount.toFixed(2))
+            }));
 
-        // Country-wise breakdown of the price catalogue.
+        const totalRevenueMap = new Map();
+        for (const payment of payments) {
+            addAmount(totalRevenueMap, payment.currency, payment.amount);
+        }
+
+        // Country-wise breakdown: a user's country comes from the dial code
+        // of their phone number; revenue is attributed through the payer's
+        // email.
+        const countryByEmail = new Map();
         const countryMap = new Map();
-        for (const price of prices) {
-            if (!countryMap.has(price.country)) {
-                countryMap.set(price.country, {
-                    country: price.country,
-                    currency: price.currency,
-                    planCount: 0,
-                    totalAmount: 0
+        const getEntry = (country) => {
+            if (!countryMap.has(country)) {
+                countryMap.set(country, {
+                    country,
+                    users: 0,
+                    subscribers: 0,
+                    revenue: new Map()
                 });
             }
+            return countryMap.get(country);
+        };
 
-            const entry = countryMap.get(price.country);
-            entry.planCount += 1;
-            entry.totalAmount += Number(price.amount);
+        for (const user of users) {
+            const country = countryFromPhone(user.phone) || "UNKNOWN";
+            countryByEmail.set(String(user.email).toLowerCase(), country);
+            const entry = getEntry(country);
+            entry.users += 1;
+            if (user.is_subscribed) entry.subscribers += 1;
+        }
+
+        for (const payment of payments) {
+            const country = countryByEmail.get(String(payment.email || "").toLowerCase());
+            if (country) addAmount(getEntry(country).revenue, payment.currency, payment.amount);
         }
 
         const countryStats = Array.from(countryMap.values())
             .map((entry) => ({
                 country: entry.country,
-                currency: entry.currency,
-                planCount: entry.planCount,
-                totalAmount: Number(entry.totalAmount.toFixed(2))
+                users: entry.users,
+                subscribers: entry.subscribers,
+                revenue: toList(entry.revenue)
             }))
-            .sort((a, b) => b.totalAmount - a.totalAmount);
+            .sort((x, y) => y.users - x.users);
 
         // Subscribers whose plan period is about to run out. The plan start is
         // the user's created_at; its end is derived from the plan duration.
@@ -119,7 +143,7 @@ const Dashboard = {
             stats: {
                 totalUsers: users.length,
                 totalHabits: habitsResult.rows[0].count,
-                totalRevenue: Number(totalRevenue.toFixed(2)),
+                totalRevenue: toList(totalRevenueMap),
                 currentSubscribers
             },
             countryStats,

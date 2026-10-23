@@ -1,6 +1,20 @@
 import { useEffect, useState } from 'react'
-import { getHelpPage } from '../services/helpPage'
+import { getHelpPage, getHelpPages } from '../services/helpPage'
 import './HelpPageView.css'
+
+async function resolvePage(slug) {
+  const exact = await getHelpPage(slug)
+  if (exact) return exact
+
+  const keyword = slug.split('_')[0]
+  const pages = await getHelpPages()
+  const match = (pages ?? []).find(
+    (page) =>
+      page.slug.toLowerCase().startsWith(keyword) ||
+      page.title.toLowerCase().startsWith(keyword),
+  )
+  return match ? getHelpPage(match.slug) : null
+}
 
 function HelpPageView({ slug, appName }) {
   const [page, setPage] = useState(null)
@@ -8,7 +22,10 @@ function HelpPageView({ slug, appName }) {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    getHelpPage(slug)
+    // Pages are created in the admin panel with any title, so when nothing is
+    // saved under the exact slug, fall back to the page whose slug or title
+    // starts with the same keyword (e.g. "terms" for "Terms and Policy").
+    resolvePage(slug)
       .then((res) => {
         if (!res) throw new Error('This page has not been published yet.')
         setPage(res)

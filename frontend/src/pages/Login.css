@@ -24,24 +24,16 @@
 .login__brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  color: var(--color-text);
-  margin-bottom: 10px;
   justify-content: center;
+  margin-bottom: 16px;
 }
 
-.login__logo {
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-primary);
-  color: var(--color-text-inverse);
-  font-weight: 700;
+.login__logo-img {
+  width: 120px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 0;
+  display: block;
 }
 
 .login__title {

@@ -13,5 +13,9 @@ CREATE TABLE IF NOT EXISTS users (
 
     subscription_id BIGINT REFERENCES subscriptions(id) ON DELETE SET NULL,
 
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+
+    deleted_at TIMESTAMP,
+
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

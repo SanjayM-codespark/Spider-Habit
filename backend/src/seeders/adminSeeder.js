@@ -4,13 +4,13 @@ const pool = require("../config/database");
 async function seedAdmin() {
     try {
         const name = "Spider Habit Admin";
-        const email = "admin@spiderhabit.com";
+        const username = "admin";
         const password = "Admin@123";
 
         // Check if admin already exists
         const existingAdmin = await pool.query(
-            `SELECT id FROM admins WHERE email = $1`,
-            [email]
+            `SELECT id FROM admins WHERE username = $1`,
+            [username]
         );
 
         if (existingAdmin.rows.length > 0) {
@@ -24,11 +24,11 @@ async function seedAdmin() {
         // Create admin
         const result = await pool.query(
             `INSERT INTO admins
-                (name, email, password_hash, role)
+                (name, username, password_hash, role)
              VALUES
                 ($1, $2, $3, $4)
-             RETURNING id, name, email, role`,
-            [name, email, passwordHash, "admin"]
+             RETURNING id, name, username, role`,
+            [name, username, passwordHash, "admin"]
         );
 
         console.log("Admin created successfully:");
@@ -42,4 +42,8 @@ async function seedAdmin() {
     }
 }
 
-seedAdmin();
+if (require.main === module) {
+    seedAdmin();
+}
+
+module.exports = seedAdmin;

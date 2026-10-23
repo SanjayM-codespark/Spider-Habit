@@ -2,36 +2,21 @@ import { useCallback, useEffect, useState } from 'react'
 import Button from '../components/ui/Button'
 import Alert from '../components/ui/Alert'
 import { getDashboardOverview } from '../services/dashboard'
-import { COUNTRIES, formatAmount } from '../lib/countries'
+import { COUNTRIES } from '../lib/countries'
 import './Dashboard.css'
 
 const ICONS = {
   users: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
+    <i className="fa-solid fa-users" aria-hidden="true" />
   ),
   habits: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="m22 8-6 6-4-4-8 8" />
-      <path d="M22 4h-6v6" />
-    </svg>
+    <i className="fa-solid fa-chart-line" aria-hidden="true" />
   ),
   revenue: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="12" y1="1" x2="12" y2="23" />
-      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-    </svg>
+    <i className="fa-solid fa-coins" aria-hidden="true" />
   ),
   subscribers: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <polyline points="16 11 18 13 22 9" />
-    </svg>
+    <i className="fa-solid fa-user-check" aria-hidden="true" />
   ),
 }
 
@@ -39,12 +24,22 @@ function formatNumber(value) {
   return new Intl.NumberFormat('en-US').format(Number(value ?? 0))
 }
 
-function formatRevenue(value) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(Number(value ?? 0))
+// Revenue arrives as [{ currency, amount }], one entry per currency paid in.
+function formatRevenue(list) {
+  if (!Array.isArray(list) || list.length === 0) return '—'
+  return list
+    .map(({ currency, amount }) => {
+      try {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency,
+          maximumFractionDigits: 2,
+        }).format(Number(amount))
+      } catch {
+        return `${currency} ${amount}`
+      }
+    })
+    .join(' + ')
 }
 
 function formatDate(value) {
@@ -112,7 +107,7 @@ function Dashboard() {
       label: 'Total Revenue',
       value: stats ? formatRevenue(stats.totalRevenue) : '—',
       icon: ICONS.revenue,
-      hint: 'Configured plan pricing',
+      hint: 'Payments received',
     },
     {
       key: 'subscribers',
@@ -123,7 +118,7 @@ function Dashboard() {
     },
   ]
 
-  const countryTotal = countryStats.reduce((sum, row) => sum + row.totalAmount, 0)
+  const userTotal = countryStats.reduce((sum, row) => sum + row.users, 0)
 
   return (
     <div className="dashboard">
@@ -168,7 +163,7 @@ function Dashboard() {
           {loading && <p className="dash__state">Loading country statistics...</p>}
 
           {!loading && countryStats.length === 0 && (
-            <p className="dash__state">No country pricing configured yet.</p>
+            <p className="dash__state">No users registered yet.</p>
           )}
 
           {!loading && countryStats.length > 0 && (
@@ -177,31 +172,32 @@ function Dashboard() {
                 <thead>
                   <tr>
                     <th>Country</th>
-                    <th>Plans</th>
-                    <th>Total</th>
+                    <th>Users</th>
+                    <th>Subscribers</th>
+                    <th>Revenue</th>
                     <th>Share</th>
                   </tr>
                 </thead>
                 <tbody>
                   {countryStats.map((row) => {
                     const country = COUNTRIES.find((item) => item.code === row.country)
-                    const name = country ? country.name : row.country
-                    const amount = country
-                      ? formatAmount(country, row.totalAmount)
-                      : `${row.currency} ${row.totalAmount}`
+                    const name = country ? country.name : 'Unknown'
                     const share =
-                      countryTotal > 0 ? ((row.totalAmount / countryTotal) * 100).toFixed(1) : 0
+                      userTotal > 0 ? ((row.users / userTotal) * 100).toFixed(1) : 0
 
                     return (
                       <tr key={row.country}>
                         <td>
                           <div className="dash__country">
-                            <span className="dash__country-code">{row.country}</span>
+                            <span className="dash__country-code">
+                              {row.country === 'UNKNOWN' ? '—' : row.country}
+                            </span>
                             {name}
                           </div>
                         </td>
-                        <td>{row.planCount}</td>
-                        <td className="table__strong">{amount}</td>
+                        <td className="table__strong">{row.users}</td>
+                        <td>{row.subscribers}</td>
+                        <td>{formatRevenue(row.revenue)}</td>
                         <td>
                           <div className="dash__bar">
                             <div className="dash__bar-track">

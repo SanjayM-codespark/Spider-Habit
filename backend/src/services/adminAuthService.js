@@ -3,39 +3,44 @@ const jwt = require("jsonwebtoken");
 
 const Admin = require("../models/adminModel");
 
-const loginAdmin = async (email, password) => {
+const INVALID_CREDENTIALS = "Invalid username or password";
 
-    // 1. Find admin by email
-    const admin = await Admin.findByEmail(email);
+// Compared against when the username is unknown so a miss costs the same as a
+// real check (prevents telling accounts apart by response time).
+const DUMMY_HASH = bcrypt.hashSync("not-a-real-password", 10);
 
-    // Don't reveal whether the email exists
-    if (!admin) {
-        throw new Error("Invalid email or password");
+class AuthError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = "AuthError";
     }
+}
 
-    // 2. Check if admin account is active
-    if (!admin.is_active) {
-        throw new Error("Admin account is inactive");
-    }
+const loginAdmin = async (username, password) => {
 
-    // 3. Compare password with bcrypt hash
+    // 1. Find admin by username
+    const admin = await Admin.findByUsername(username);
+
+    // 2. Compare password with bcrypt hash (always, even for unknown users)
     const isPasswordValid = await bcrypt.compare(
         password,
-        admin.password_hash
+        admin ? admin.password_hash : DUMMY_HASH
     );
 
-    if (!isPasswordValid) {
-        throw new Error("Invalid email or password");
+    // Unknown user, inactive account and wrong password all look identical so
+    // the response never reveals which accounts exist.
+    if (!admin || !admin.is_active || !isPasswordValid) {
+        throw new AuthError(INVALID_CREDENTIALS);
     }
 
-    // 4. Create JWT payload
+    // 3. Create JWT payload
     const payload = {
         id: admin.id,
-        email: admin.email,
+        username: admin.username,
         role: admin.role
     };
 
-    // 5. Generate JWT token
+    // 4. Generate JWT token
     const token = jwt.sign(
         payload,
         process.env.JWT_SECRET,
@@ -44,18 +49,19 @@ const loginAdmin = async (email, password) => {
         }
     );
 
-    // 6. Return authenticated admin information
+    // 5. Return authenticated admin information
     return {
         token,
         admin: {
             id: admin.id,
             name: admin.name,
-            email: admin.email,
+            username: admin.username,
             role: admin.role
         }
     };
 };
 
 module.exports = {
-    loginAdmin
+    loginAdmin,
+    AuthError
 };

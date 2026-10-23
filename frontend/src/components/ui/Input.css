@@ -46,11 +46,34 @@
 .field__append {
   display: flex;
   align-items: center;
-  gap: 10px;
+  position: relative;
+  width: 100%;
 
   .field__input {
     flex: 1;
     min-width: 0;
+    padding-right: 40px;
+  }
+
+  & > button {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    width: 28px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+  }
+
+  & > button:hover {
+    color: var(--color-text);
   }
 }
 

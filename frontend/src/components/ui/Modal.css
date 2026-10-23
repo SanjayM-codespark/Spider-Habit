@@ -61,9 +61,13 @@
     color: var(--color-text);
   }
 
-  svg {
+  i {
     width: 16px;
     height: 16px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 

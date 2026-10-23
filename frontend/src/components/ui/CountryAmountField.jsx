@@ -16,7 +16,6 @@ function CountryAmountField({
 }) {
   const rows = value.length > 0 ? value : [newRow()]
   const [showAddForm, setShowAddForm] = useState(false)
-  const [newName, setNewName] = useState('')
   const [newCode, setNewCode] = useState('')
   const [newAmount, setNewAmount] = useState('')
 
@@ -25,45 +24,29 @@ function CountryAmountField({
     if (onChange) onChange(next)
   }
 
-  function handleAddCountry() {
-    const name = newName.trim()
-    const code = newCode.trim().toUpperCase()
-    const amount = newAmount.trim()
-
-    if (!name || !code || !amount) return
-
-    const existing = COUNTRIES.find((c) => c.code === code)
-    if (!existing) {
-      if (getCountryByCode(code) === COUNTRIES[0] && code !== DEFAULT_COUNTRY) {
-        return
-      }
-      COUNTRIES.push({
-        code,
-        name,
-        dialCode: '',
-        currency: code,
-        symbol: code,
-      })
-    }
-
-    if (onChange) onChange([...rows, { country: code, amount }])
+  function resetAddForm() {
     setShowAddForm(false)
-    setNewName('')
     setNewCode('')
     setNewAmount('')
   }
 
-  function cancelAddCountry() {
-    setShowAddForm(false)
-    setNewName('')
-    setNewCode('')
-    setNewAmount('')
+  function handleAddCountry() {
+    const code = newCode.trim().toUpperCase()
+    const amount = newAmount.trim()
+
+    if (!code || !amount) return
+
+    if (onChange) onChange([...rows, { country: code, amount }])
+    resetAddForm()
   }
 
   function removeRow(index) {
     if (rows.length === 1) return
     if (onChange) onChange(rows.filter((_, i) => i !== index))
   }
+
+  const usedCodes = new Set(rows.map((r) => r.country))
+  const availableCountries = COUNTRIES.filter((c) => !usedCodes.has(c.code))
 
   return (
     <fieldset className={`caf ${className}`.trim()} {...props}>
@@ -88,16 +71,10 @@ function CountryAmountField({
                     !usedElsewhere.has(countryOption.code),
                 ).map((countryOption) => (
                   <option key={countryOption.code} value={countryOption.code}>
-                    {countryOption.name} ({countryOption.dialCode})
+                    {countryOption.name} ({countryOption.code})
                   </option>
                 ))}
               </select>
-
-              <div className="caf__country">
-                <span className="caf__country-name">
-                  {country.name} <span className="caf__country-code">{country.dialCode}</span>
-                </span>
-              </div>
 
               <label className="caf__amount">
                 <span className="caf__currency">{country.symbol}</span>
@@ -119,10 +96,7 @@ function CountryAmountField({
                   onClick={() => removeRow(index)}
                   aria-label={`Remove ${country.name}`}
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
+                  <i className="fa-solid fa-xmark" aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -134,24 +108,20 @@ function CountryAmountField({
         <div className="caf__add-form">
           <div className="caf__add-fields">
             <label className="caf__add-field">
-              <span>Country Name</span>
-              <input
-                type="text"
-                value={newName}
-                onChange={(event) => setNewName(event.target.value)}
-                placeholder="e.g. Canada"
-                autoFocus
-              />
-            </label>
-            <label className="caf__add-field">
-              <span>Country Code</span>
-              <input
-                type="text"
+              <span>Country</span>
+              <select
+                className="caf__select"
                 value={newCode}
                 onChange={(event) => setNewCode(event.target.value)}
-                placeholder="e.g. CA"
-                maxLength={2}
-              />
+                autoFocus
+              >
+                <option value="">Select country</option>
+                {availableCountries.map((countryOption) => (
+                  <option key={countryOption.code} value={countryOption.code}>
+                    {countryOption.name} ({countryOption.code})
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="caf__add-field">
               <span>Price</span>
@@ -176,7 +146,7 @@ function CountryAmountField({
             <button
               type="button"
               className="caf__add-cancel"
-              onClick={cancelAddCountry}
+              onClick={resetAddForm}
             >
               Cancel
             </button>
@@ -184,10 +154,7 @@ function CountryAmountField({
         </div>
       ) : (
         <button type="button" className="caf__add" onClick={() => setShowAddForm(true)}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
+          <i className="fa-solid fa-plus" aria-hidden="true" />
           Add Country
         </button>
       )}

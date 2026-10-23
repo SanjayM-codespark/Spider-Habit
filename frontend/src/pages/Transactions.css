@@ -28,9 +28,13 @@
   background: var(--color-surface);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
-  svg {
+  i {
     width: 16px;
     height: 16px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
     color: var(--color-text-muted);
   }

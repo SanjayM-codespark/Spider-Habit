@@ -18,6 +18,7 @@ function GeneralSettings() {
     ios_version: '',
     app_store_link: '',
     play_store_link: '',
+    free_habit_limit: '7',
   })
 
   const load = useCallback(() => {
@@ -29,6 +30,7 @@ function GeneralSettings() {
           ios_version: data?.ios_version ?? '',
           app_store_link: data?.app_store_link ?? '',
           play_store_link: data?.play_store_link ?? '',
+          free_habit_limit: data?.free_habit_limit ?? '7',
         })
       })
       .catch((err) => setError(err.message || 'Failed to load settings.'))
@@ -54,6 +56,10 @@ function GeneralSettings() {
       setError('App name is required.')
       return
     }
+    if (!/^[0-9]+$/.test(String(form.free_habit_limit).trim())) {
+      setError('Free habit count must be a whole number (0 or more).')
+      return
+    }
     for (const link of [app_store_link, play_store_link]) {
       if (link.trim() && !/^https?:\/\/.+/.test(link.trim())) {
         setError('Store links must start with http:// or https://')
@@ -70,6 +76,7 @@ function GeneralSettings() {
         ios_version: form.ios_version.trim(),
         app_store_link: form.app_store_link.trim(),
         play_store_link: form.play_store_link.trim(),
+        free_habit_limit: String(form.free_habit_limit).trim(),
       }
       const data = await updateGeneralSettings(payload)
       setAppInfo(data)
@@ -158,6 +165,19 @@ function GeneralSettings() {
                 disabled={disabled}
               />
             </div>
+
+            <h3 className="card__title">Free Users</h3>
+
+            <Input
+              label="Free Habit Count"
+              type="number"
+              min="0"
+              value={form.free_habit_limit}
+              onChange={setField('free_habit_limit')}
+              placeholder="e.g. 7"
+              hint="Maximum habits a free user can create in the mobile app."
+              disabled={disabled}
+            />
 
             <div className="settings__actions">
               <Button type="submit" loading={saving}>

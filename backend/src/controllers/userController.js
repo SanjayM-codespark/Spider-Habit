@@ -28,6 +28,14 @@ const register = async (req, res) => {
         // they purchase a plan, so update their record instead of erroring.
         const existingEmail = await User.findByEmail(String(email).trim().toLowerCase());
         if (existingEmail) {
+            // A plain sign-up (no plan) must never overwrite an existing account.
+            if (!subId) {
+                return res.status(409).json({
+                    success: false,
+                    message: "An account with this email already exists"
+                });
+            }
+
             const updated = await User.update(existingEmail.id, {
                 name: String(name).trim(),
                 email: String(email).trim().toLowerCase(),
@@ -60,6 +68,17 @@ const register = async (req, res) => {
             });
         }
 
+        const deletedAccount = await User.findDeletedByEmailOrPhone({
+            email: String(email).trim().toLowerCase(),
+            phone: String(phone).trim()
+        });
+        if (deletedAccount) {
+            return res.status(409).json({
+                success: false,
+                message: "This account was deleted. Please contact support to restore it."
+            });
+        }
+
         const user = await User.create({
             name: String(name).trim(),
             email: String(email).trim().toLowerCase(),
@@ -84,10 +103,9 @@ const register = async (req, res) => {
 };
 
 const list = async (req, res) => {
-    console.log("user list:",req);
-    
     try {
-        const users = await User.findAll();
+        const includeDeleted = req.query?.includeDeleted === 'true' || req.query?.deleted === 'true';
+        const users = includeDeleted ? await User.findAll(true) : await User.findAll();
 
         return res.status(200).json({
             success: true,
@@ -98,6 +116,40 @@ const list = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: error.message || "Failed to fetch users"
+        });
+    }
+};
+
+/**
+ * Every habit of premium (subscribed) users, with the owner's details, for
+ * the admin "Premium Habits" page.
+ */
+const listPremiumHabits = async (req, res) => {
+    try {
+        const data = await Habit.findPremium();
+
+        return res.status(200).json({ success: true, data });
+    } catch (error) {
+        console.error("List premium habits error:", error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Failed to fetch premium users' habits"
+        });
+    }
+};
+
+const listDeleted = async (req, res) => {
+    try {
+        const users = await User.findDeleted();
+        return res.status(200).json({
+            success: true,
+            data: users
+        });
+    } catch (error) {
+        console.error("List deleted users error:", error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Failed to fetch deleted users"
         });
     }
 };
@@ -139,6 +191,17 @@ const checkExists = async (req, res) => {
             }
         }
 
+        const deleted = await User.findDeletedByEmailOrPhone({
+            email: email ? String(email).trim().toLowerCase() : null,
+            phone: phone ? String(phone).trim() : null
+        });
+        if (deleted) {
+            return res.status(409).json({
+                success: false,
+                message: "This account was deleted. Please contact support to restore it."
+            });
+        }
+
         return res.status(404).json({
             success: false,
             message: "User not found on server"
@@ -152,10 +215,39 @@ const checkExists = async (req, res) => {
     }
 };
 
+const LOGIN_MAX_EMAIL_LENGTH = 254;
+const LOGIN_MAX_PASSWORD_LENGTH = 128;
+const LOGIN_DUMMY_HASH = bcrypt.hashSync("not-a-real-password", 10);
+
 const login = async (req, res) => {
     try {
-        const { email, phone, password } = req.body;
+        const { email, password } = req.body || {};
 
+        // Only plain strings are accepted (rejects objects/arrays/numbers).
+        if (
+            (email !== undefined && typeof email !== "string") ||
+            (password !== undefined && typeof password !== "string")
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid email or password"
+            });
+        }
+
+        const normalizedEmail = (email || "").trim().toLowerCase();
+
+        if (!normalizedEmail && !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Email and password are required"
+            });
+        }
+        if (!normalizedEmail) {
+            return res.status(400).json({
+                success: false,
+                message: "Email is required"
+            });
+        }
         if (!password) {
             return res.status(400).json({
                 success: false,
@@ -163,35 +255,51 @@ const login = async (req, res) => {
             });
         }
 
-        const identifier = email
-            ? String(email).trim().toLowerCase()
-            : phone
-                ? String(phone).trim()
-                : null;
-
-        if (!identifier) {
+        if (
+            normalizedEmail.length > LOGIN_MAX_EMAIL_LENGTH ||
+            password.length > LOGIN_MAX_PASSWORD_LENGTH ||
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)
+        ) {
             return res.status(400).json({
                 success: false,
-                message: "Email or phone is required"
+                message: "Please enter a valid email address"
             });
         }
 
-        const user = email
-            ? await User.findByEmail(identifier)
-            : await User.findByPhone(identifier);
+        const user = await User.findByEmail(normalizedEmail);
+        const deletedUser = user ? null : await User.findDeletedByEmail(normalizedEmail);
 
+        // Always run a bcrypt compare so unknown emails take as long as wrong
+        // passwords (no account enumeration by response time).
+        const valid = await bcrypt.compare(
+            password,
+            (user || deletedUser)?.password_hash || LOGIN_DUMMY_HASH
+        );
+
+        // A deleted account is only reported as deleted once the correct
+        // password is given, so this does not reveal which emails exist.
+        if (deletedUser && valid) {
+            return res.status(403).json({
+                success: false,
+                code: "ACCOUNT_DELETED",
+                message: "This account has been deleted. Please contact admin."
+            });
+        }
+
+        // Same generic message for unknown email and wrong password. The 404
+        // status is kept only so the mobile app can fall back to its on-device
+        // (free plan) accounts; the message never reveals which case it was.
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User not found on server"
+                message: "Invalid email or password"
             });
         }
 
-        const valid = await bcrypt.compare(String(password), user.password_hash);
         if (!valid) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid email/phone or password"
+                message: "Invalid email or password"
             });
         }
 
@@ -214,7 +322,7 @@ const login = async (req, res) => {
         console.error("User login error:", error);
         return res.status(500).json({
             success: false,
-            message: error.message || "Login failed"
+            message: "Login failed. Please try again."
         });
     }
 };
@@ -334,7 +442,7 @@ const remove = async (req, res) => {
         if (!deleted) {
             return res.status(404).json({
                 success: false,
-                message: "User not found"
+                message: "User not found or already deleted"
             });
         }
 
@@ -351,12 +459,39 @@ const remove = async (req, res) => {
     }
 };
 
+const restore = async (req, res) => {
+    try {
+        const restored = await User.restore(req.params.id);
+
+        if (!restored) {
+            return res.status(404).json({
+                success: false,
+                message: "Deleted user not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "User restored successfully"
+        });
+    } catch (error) {
+        console.error("Restore user error:", error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Failed to restore user"
+        });
+    }
+};
+
 module.exports = {
     register,
     login,
     checkExists,
     list,
+    listPremiumHabits,
+    listDeleted,
     getOne,
     update,
-    remove
+    remove,
+    restore
 };

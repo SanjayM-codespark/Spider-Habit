@@ -58,9 +58,13 @@
   color: var(--color-primary);
   margin-bottom: 4px;
 
-  svg {
+  i {
     width: 20px;
     height: 20px;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 

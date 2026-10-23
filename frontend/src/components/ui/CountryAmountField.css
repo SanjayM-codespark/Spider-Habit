@@ -49,11 +49,22 @@
 .caf__select {
   flex: 1 1 150px;
   min-width: 140px;
-  padding: 9px 10px;
+  padding: 9px 32px 9px 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: var(--color-surface);
+  background-color: var(--color-surface);
+  background-image: linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
+    linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 2px),
+    calc(100% - 13px) calc(50% - 2px);
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  appearance: none;
   color: var(--color-text);
+  font-size: 14px;
+  text-overflow: ellipsis;
+  cursor: pointer;
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
@@ -126,9 +137,13 @@
     background: #fecaca;
   }
 
-  svg {
+  i {
     width: 16px;
     height: 16px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -153,9 +168,13 @@
     background: var(--color-surface);
   }
 
-  svg {
+  i {
     width: 15px;
     height: 15px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -189,7 +208,17 @@
     color: var(--color-text-secondary);
   }
 
+  .caf__select {
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+    height: 38px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
   input {
+    height: 38px;
     padding: 8px 10px;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);

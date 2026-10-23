@@ -1,6 +1,6 @@
 import api from '../lib/api'
 
-export async function loginAdmin(email, password) {
-  const response = await api.post('/admin/login', { email, password })
+export async function loginAdmin(username, password) {
+  const response = await api.post('/admin/login', { username, password })
   return response.data
 }

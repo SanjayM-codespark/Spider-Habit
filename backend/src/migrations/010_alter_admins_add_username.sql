@@ -1,0 +1,9 @@
+ALTER TABLE admins ADD COLUMN IF NOT EXISTS username VARCHAR(100) UNIQUE;
+
+UPDATE admins SET username = email WHERE username IS NULL;
+
+ALTER TABLE admins ALTER COLUMN username SET NOT NULL;
+
+ALTER TABLE admins DROP CONSTRAINT IF EXISTS admins_email_key;
+
+ALTER TABLE admins DROP COLUMN IF EXISTS email;

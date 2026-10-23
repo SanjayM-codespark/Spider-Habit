@@ -7,45 +7,34 @@ const NAV_ITEMS = [
     id: 'dashboard',
     label: 'Dashboard',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <rect x="3" y="3" width="7" height="7" rx="1" />
-        <rect x="14" y="3" width="7" height="7" rx="1" />
-        <rect x="3" y="14" width="7" height="7" rx="1" />
-        <rect x="14" y="14" width="7" height="7" rx="1" />
-      </svg>
+      <i className="fa-solid fa-table-cells-large" aria-hidden="true" />
     ),
   },
   {
     id: 'users',
     label: 'Users',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-      </svg>
+      <i className="fa-solid fa-users" aria-hidden="true" />
     ),
+    children: [
+      { id: 'all-users', label: 'All Users' },
+      { id: 'premium-users', label: 'Premium Users' },
+      { id: 'premium-habits', label: 'Premium Habits' },
+      { id: 'deleted-users', label: 'Deleted Users' },
+    ],
   },
   {
     id: 'transactions',
     label: 'Transactions',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <line x1="12" y1="1" x2="12" y2="23" />
-        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-      </svg>
+      <i className="fa-solid fa-money-bill-wave" aria-hidden="true" />
     ),
   },
   {
     id: 'subscription',
     label: 'Subscription',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-        <path d="m3.3 7 8.7 5 8.7-5" />
-        <path d="M12 22V12" />
-      </svg>
+      <i className="fa-solid fa-box" aria-hidden="true" />
     ),
     children: [
       { id: 'add-subscription', label: 'Add Subscription' },
@@ -56,33 +45,18 @@ const NAV_ITEMS = [
     id: 'help',
     label: 'Help',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-        <line x1="12" y1="17" x2="12.01" y2="17" />
-      </svg>
+      <i className="fa-solid fa-circle-question" aria-hidden="true" />
     ),
     children: [
-      { id: 'privacy-policy', label: 'Privacy Policy' },
-      { id: 'terms-conditions', label: 'Terms & Conditions' },
-      { id: 'contact-us', label: 'Contact Us' },
+      { id: 'add-help-page', label: 'Add Help Page' },
+      { id: 'manage-help-pages', label: 'Manage Help Pages' },
     ],
   },
   {
     id: 'settings',
     label: 'Settings',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <line x1="4" y1="21" x2="4" y2="14" />
-        <line x1="4" y1="10" x2="4" y2="3" />
-        <line x1="12" y1="21" x2="12" y2="12" />
-        <line x1="12" y1="8" x2="12" y2="3" />
-        <line x1="20" y1="21" x2="20" y2="16" />
-        <line x1="20" y1="12" x2="20" y2="3" />
-        <line x1="1" y1="14" x2="7" y2="14" />
-        <line x1="9" y1="8" x2="15" y2="8" />
-        <line x1="17" y1="16" x2="23" y2="16" />
-      </svg>
+      <i className="fa-solid fa-sliders" aria-hidden="true" />
     ),
     children: [
       { id: 'general-settings', label: 'General Settings' },
@@ -92,9 +66,7 @@ const NAV_ITEMS = [
 ]
 
 const CHEVRON = (
-  <svg className="sidebar__chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <polyline points="6 9 12 15 18 9" />
-  </svg>
+  <i className="fa-solid fa-chevron-down sidebar__chevron-icon" aria-hidden="true" />
 )
 
 function Sidebar({
@@ -108,7 +80,15 @@ function Sidebar({
   onMobileClose,
   onExpand,
 }) {
-  const [openGroups, setOpenGroups] = useState({})
+  const [openGroups, setOpenGroups] = useState(() => {
+    const initial = {}
+    for (const item of items) {
+      if (item.children && item.children.some((child) => child.id === activeKey)) {
+        initial[item.id] = true
+      }
+    }
+    return initial
+  })
 
   const classes = [
     'sidebar',

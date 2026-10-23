@@ -4,6 +4,9 @@ const { authenticate } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
+// Public settings for the mobile app (no auth)
+router.get("/public", settingsController.getPublic);
+
 // All settings routes require a valid admin token
 router.get("/", authenticate, settingsController.get);
 router.put("/general", authenticate, settingsController.updateGeneral);

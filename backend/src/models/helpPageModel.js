@@ -23,6 +23,31 @@ const HelpPage = {
         return result.rows[0] || null;
     },
 
+    /** Create a page, deriving a unique slug from its title. */
+    async create({ title, content }) {
+        const base =
+            String(title)
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "_")
+                .replace(/^_+|_+$/g, "") || "page";
+
+        let slug = base;
+        for (let n = 2; await HelpPage.findBySlug(slug); n += 1) {
+            slug = `${base}_${n}`;
+        }
+
+        return HelpPage.upsert(slug, { title, content });
+    },
+
+    async remove(slug) {
+        const result = await pool.query(
+            `DELETE FROM help_pages WHERE slug = $1 RETURNING slug`,
+            [slug]
+        );
+
+        return result.rows[0] || null;
+    },
+
     async upsert(slug, { title, content }) {
         const result = await pool.query(
             `INSERT INTO help_pages (slug, title, content, updated_at)

@@ -5,6 +5,16 @@ export async function getUsers() {
   return response.data
 }
 
+export async function getDeletedUsers() {
+  const response = await api.get('/users/deleted/list', { auth: true })
+  return response.data
+}
+
+export async function getPremiumHabits() {
+  const response = await api.get('/users/premium/habits', { auth: true })
+  return response.data
+}
+
 export async function getUser(id) {
   const response = await api.get(`/users/${id}`, { auth: true })
   return response.data
@@ -17,5 +27,10 @@ export async function updateUser(id, payload) {
 
 export async function deleteUser(id) {
   const response = await api.delete(`/users/${id}`, { auth: true })
+  return response.data
+}
+
+export async function restoreUser(id) {
+  const response = await api.post(`/users/${id}/restore`, {}, { auth: true })
   return response.data
 }

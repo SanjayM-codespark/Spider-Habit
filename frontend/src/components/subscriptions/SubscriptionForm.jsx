@@ -4,6 +4,7 @@ import Input from '../ui/Input'
 import Select from '../ui/Select'
 import Alert from '../ui/Alert'
 import CountryAmountField from '../ui/CountryAmountField'
+import { SUBSCRIPTION_FEATURES, emptyFeatures } from '../../lib/subscriptionFeatures'
 import { formatAmount, getCountryByCode } from '../../lib/countries'
 import './SubscriptionForm.css'
 
@@ -33,6 +34,7 @@ function SubscriptionForm({
       duration: initialData?.duration ?? '',
       description: initialData?.description ?? '',
       platform: initialData?.platform ? platformToLabel(initialData.platform) : '',
+      features: { ...emptyFeatures(), ...(initialData?.features ?? {}) },
       amounts:
         pricing && pricing.length > 0
           ? pricing.map((price) => ({ country: price.country, amount: String(price.amount) }))
@@ -49,6 +51,13 @@ function SubscriptionForm({
     return (event) => setForm((prev) => ({ ...prev, [field]: event.target.value }))
   }
 
+  function toggleFeature(key) {
+    setForm((prev) => ({
+      ...prev,
+      features: { ...prev.features, [key]: !prev.features[key] },
+    }))
+  }
+
   function handleAmounts(amounts) {
     setForm((prev) => ({ ...prev, amounts }))
   }
@@ -58,7 +67,7 @@ function SubscriptionForm({
     setError('')
     setSuccess('')
 
-    const { name, duration, description, platform, amounts } = form
+    const { name, duration, description, platform, amounts, features } = form
 
     if (!name || !duration || !description || !platform) {
       setError('Please fill in all the fields.')
@@ -74,6 +83,7 @@ function SubscriptionForm({
       duration,
       description: description.trim(),
       platform: platformToValue(platform),
+      features,
       pricing: amounts.map((row) => ({
         country: row.country,
         currency: getCountryByCode(row.country).currency,
@@ -149,6 +159,28 @@ function SubscriptionForm({
           />
         </div>
       </div>
+
+      <fieldset className="subform__features" disabled={saving}>
+        <legend className="subform__features-title">Plan features</legend>
+        <p className="subform__features-hint">
+          Choose what subscribers on this plan can use in the mobile app.
+        </p>
+        <div className="subform__features-list">
+          {SUBSCRIPTION_FEATURES.map((feature) => (
+            <label key={feature.key} className="subform__feature">
+              <input
+                type="checkbox"
+                checked={!!form.features[feature.key]}
+                onChange={() => toggleFeature(feature.key)}
+              />
+              <span>
+                <span className="subform__feature-label">{feature.label}</span>
+                <span className="subform__feature-hint">{feature.hint}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       <CountryAmountField
         label="Amount (per country)"

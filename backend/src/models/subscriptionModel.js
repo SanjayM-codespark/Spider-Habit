@@ -1,7 +1,7 @@
 const pool = require("../config/database");
 
 const Subscription = {
-    async create({ name, duration, description, platform, pricing, createdBy }) {
+    async create({ name, duration, description, platform, features, pricing, createdBy }) {
         const client = await pool.connect();
 
         try {
@@ -9,12 +9,12 @@ const Subscription = {
 
             const result = await client.query(
                 `INSERT INTO subscriptions
-                    (name, duration, description, platform, created_by)
+                    (name, duration, description, platform, features, created_by)
                  VALUES
-                    ($1, $2, $3, $4, $5)
+                    ($1, $2, $3, $4, $5, $6)
                  RETURNING
-                    id, name, duration, description, platform, is_active, created_at`,
-                [name, duration, description, platform, createdBy]
+                    id, name, duration, description, platform, features, is_active, created_at`,
+                [name, duration, description, platform, JSON.stringify(features), createdBy]
             );
 
             const subscription = result.rows[0];
@@ -47,7 +47,7 @@ const Subscription = {
     async findById(id) {
         const result = await pool.query(
             `SELECT
-                id, name, duration, description, platform,
+                id, name, duration, description, platform, features,
                 is_active, created_at, updated_at
              FROM subscriptions
              WHERE id = $1
@@ -72,7 +72,7 @@ const Subscription = {
         };
     },
 
-    async update(id, { name, duration, description, platform, pricing }) {
+    async update(id, { name, duration, description, platform, features, pricing }) {
         const client = await pool.connect();
 
         try {
@@ -81,12 +81,12 @@ const Subscription = {
             const result = await client.query(
                 `UPDATE subscriptions
                  SET name = $1, duration = $2, description = $3,
-                     platform = $4, updated_at = CURRENT_TIMESTAMP
-                 WHERE id = $5
+                     platform = $4, features = $5, updated_at = CURRENT_TIMESTAMP
+                 WHERE id = $6
                  RETURNING
-                    id, name, duration, description, platform,
+                    id, name, duration, description, platform, features,
                     is_active, created_at, updated_at`,
-                [name, duration, description, platform, id]
+                [name, duration, description, platform, JSON.stringify(features), id]
             );
 
             if (result.rows.length === 0) {
@@ -137,7 +137,7 @@ const Subscription = {
     async findActive(country = null) {
         const result = await pool.query(
             `SELECT
-                s.id, s.name, s.duration, s.description, s.platform,
+                s.id, s.name, s.duration, s.description, s.platform, s.features,
                 s.is_active, s.created_at
              FROM subscriptions s
              WHERE s.is_active = TRUE
@@ -185,7 +185,7 @@ const Subscription = {
     async findAll() {
         const result = await pool.query(
             `SELECT
-                s.id, s.name, s.duration, s.description, s.platform,
+                s.id, s.name, s.duration, s.description, s.platform, s.features,
                 s.is_active, s.created_at
              FROM subscriptions s
              ORDER BY s.created_at DESC`
