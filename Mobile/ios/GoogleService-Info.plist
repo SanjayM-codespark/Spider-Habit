@@ -2,16 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CLIENT_ID</key>
-	<string>75622640482-p10sfu4ri8efdc85cr92gc29bk9l1v0d.apps.googleusercontent.com</string>
-	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.75622640482-p10sfu4ri8efdc85cr92gc29bk9l1v0d</string>
-	<key>ANDROID_CLIENT_ID</key>
-	<string>75622640482-3216m3g3rf4it85gelhml8sgmhr1eaok.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
-	<string>AIzaSyBN-KMU_f9wvB05uWZ-vcULOqK7UxsC0RI</string>
+	<string>AIzaSyDPY2OKj6i60SLW7-VYlCg7f6wLC5nBfjE</string>
 	<key>GCM_SENDER_ID</key>
-	<string>75622640482</string>
+	<string>651646082920</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
@@ -19,7 +13,7 @@
 	<key>PROJECT_ID</key>
 	<string>spider-habit</string>
 	<key>STORAGE_BUCKET</key>
-	<string>spider-hobby.firebasestorage.app</string>
+	<string>spider-habit.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -31,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:75622640482:ios:f0262a48147993d3d81a3b</string>
+	<string>1:651646082920:ios:8e188b924d20f0dd1980dd</string>
 </dict>
 </plist>
